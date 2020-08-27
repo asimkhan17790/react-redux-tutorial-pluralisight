@@ -1,13 +1,13 @@
 import * as types from "../actions/actionTypes";
-export default function courseReducer (state = [] , action) { // default argument syntax used here for state.so if no initial state is there, an empty array will be considered as the initial state
+import initialState from "./initialState";
 
-    switch (action.type) {
-        case types.CREATE_COURSE:
-            return [...state, {...action.course}];
-        default:
-            return state;
-
-    }
-
-
+export default function courseReducer(state = initialState.courses, action) {
+  switch (action.type) {
+    case types.CREATE_COURSE:
+      return [...state, { ...action.course }];
+    case types.LOAD_COURSES_SUCCESS:
+      return action.courses;
+    default:
+      return state;
+  }
 }
