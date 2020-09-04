@@ -5,60 +5,83 @@ import * as authorActions from "../../redux/actions/authorActions";
 import PropTypes from "prop-types";
 import { bindActionCreators } from "redux";
 import CourseList from "./CourseList";
+import { Redirect } from "react-router-dom";
+import Spinner from '../common/Spinner';
 class CoursesPage extends React.Component {
-    componentDidMount() {
-        const { courses, authors, actions } = this.props;
+  state = {
+    redirectToAddCoursePage: false
+  };
 
-        if (courses.length === 0) { // call api only if courses list is empty
-          actions.loadCourses().catch(error => {
-            alert("Loading courses failed" + error);
-          });
-        }
+  componentDidMount() {
+    const { courses, authors, actions } = this.props;
 
-        if (authors.length === 0) { // call only if authors list is empty
-          actions.loadAuthors().catch(error => {
-            alert("Loading authors failed" + error);
-          });
-        }
+    if (courses.length === 0) {
+      actions.loadCourses().catch(error => {
+        alert("Loading courses failed" + error);
+      });
     }
-    render() {
-    return (<>
-            <h2>Courses</h2>
-            <CourseList courses={this.props.courses} />
-         </>
-         );
+
+    if (authors.length === 0) {
+      actions.loadAuthors().catch(error => {
+        alert("Loading authors failed" + error);
+      });
     }
+  }
+
+  render() {
+    return (
+      <>
+        {this.state.redirectToAddCoursePage && <Redirect to="/course" />}
+        <h2>Courses</h2>
+        {console.log(this.props.loading)}
+        {this.props.loading ? (<Spinner/>): (<>
+          <button
+          style={{ marginBottom: 20 }}
+          className="btn btn-primary add-course"
+          onClick={() => this.setState({ redirectToAddCoursePage: true })}
+        >
+          Add Course 
+        </button>
+        <CourseList courses={this.props.courses} />          
+        </>)}  
+      </>
+    );
+  }
 }
+
 CoursesPage.propTypes = {
+  authors: PropTypes.array.isRequired,
   courses: PropTypes.array.isRequired,
-  actions: PropTypes.object.isRequired
+  actions: PropTypes.object.isRequired,
+  loading: PropTypes.bool.isRequired,
 };
 
-function mapStateToProps(state,/*ownProps*/) {
-     return {
-        courses:
-          state.authors.length === 0
-            ? []
-            : state.courses.map(course => {
-                return {
-                  ...course,
-                  authorName: state.authors.find(a => a.id === course.authorId).name
-                };
-              }),
-        authors: state.authors
-      };
+function mapStateToProps(state) {
+  return {
+    courses:
+      state.authors.length === 0
+        ? []
+        : state.courses.map(course => {
+            return {
+              ...course,
+              authorName: state.authors.find(a => a.id === course.authorId).name
+            };
+          }),
+    authors: state.authors,
+    loading: state.apiCallsInProgress > 0
+  };
 }
 
 function mapDispatchToProps(dispatch) {
   return {
-     actions: {
-          loadCourses: bindActionCreators(courseActions.loadCourses, dispatch),
-          loadAuthors: bindActionCreators(authorActions.loadAuthors, dispatch)
-        }
+    actions: {
+      loadCourses: bindActionCreators(courseActions.loadCourses, dispatch),
+      loadAuthors: bindActionCreators(authorActions.loadAuthors, dispatch)
+    }
   };
 }
 
 export default connect(
-    mapStateToProps,
-    mapDispatchToProps
+  mapStateToProps,
+  mapDispatchToProps
 )(CoursesPage);
