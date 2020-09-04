@@ -7,7 +7,7 @@ import CourseForm from "./CourseForm";
 import { newCourse } from "../../../tools/mockData";
 import Spinner from '../common/Spinner';
 import { toast } from "react-toastify";
-export function ManageCoursePage ({ courses, authors, loadAuthors, loadCourses, saveCourse, history, ...props } ) {
+function ManageCoursePage ({ courses, authors, loadAuthors, loadCourses, saveCourse, history, ...props } ) {
 
    //const { courses, authors, loadAuthors, loadCourses } = props;
    const [course, setCourse] = useState({...props.course});
@@ -37,9 +37,10 @@ export function ManageCoursePage ({ courses, authors, loadAuthors, loadCourses, 
           [name]: name === "authorId" ? parseInt(value, 10) : value
         }));
       }
-    function handleSave(event) {
-      setSaving(true);
+    function handleSave(event) {        
         event.preventDefault();
+        if (!formIsValid()) return;
+        setSaving(true);
         saveCourse(course).then(() => {
           toast.success("Course Saved...");
           history.push("/courses");
@@ -48,6 +49,19 @@ export function ManageCoursePage ({ courses, authors, loadAuthors, loadCourses, 
           setErrors({onSave:error.message});
         });
       }
+
+  function formIsValid() {
+    const { title, authorId, category } = course;
+    const errors = {};
+
+    if (!title) errors.title = "Title is required.";
+    if (!authorId) errors.author = "Author is required";
+    if (!category) errors.category = "Category is required";
+
+    setErrors(errors);
+    // Form is valid if the errors object still has no properties
+    return Object.keys(errors).length === 0;
+  }
     return (
       authors.length == 0 || courses.length == 0 ? (<Spinner/>):
         (<CourseForm
