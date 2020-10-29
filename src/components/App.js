@@ -24,6 +24,6 @@ function App() {
       <ToastContainer autoClose={3000} hideProgressBar />
     </div>
   );
-}
+} 
 
 export default App;
